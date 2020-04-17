@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Contact;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +22,9 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/home';
+    public const HOME = '/dashboard';
+    // public const DASHBOARD = '/home';
+    // public const LOGOUT = '/login';
 
     /**
      * Define your route model bindings, pattern filters, etc.
@@ -31,6 +34,9 @@ class RouteServiceProvider extends ServiceProvider
     public function boot()
     {
         //
+      // Route::bind('contact', function($value){
+      //   return Contact::where('first_name', $value)->firstOrFail();
+      // });
 
         parent::boot();
     }

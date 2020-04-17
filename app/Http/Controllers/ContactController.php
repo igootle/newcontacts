@@ -1,23 +1,30 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
-use App\Contact;
+
 use App\Company;
+use App\Contact;
+use Illuminate\Http\Request;
+use App\Http\Requests\ContactRequest;
 
 class ContactController extends Controller
 {
+    public function __construct()
+    {
+      $this->middleware('auth');
+    }
+
     public function index()
     {
+
         // $contacts = Contact::all();
         // $contacts = Contact::orderBy('first_name', 'asc')->get();
-        $companies = Company::orderBy('name')->pluck('name', 'id')->prepend('All Companies', ' ');
-
-        $contacts = Contact::orderBy('updated_at', 'desc')->where(function ($query) {
-            if ($companyId = request('company_id')) {
-                $query->where('company_id', $companyId);
-            }
-        })->paginate(10);
+        // $companies = Company::orderBy('name')->pluck('name', 'id')->prepend('All Companies', ' ');
+        $companies = Company::userCompanies();
+        // \DB::enableQueryLog();
+        // $contacts = Contact::latestFirst()->filter()->paginate(10);
+        $contacts = auth()->user()->contacts()->latestFirst()->paginate(10);
+        // dd(\DB::getQueryLog());
 
         return view('contacts.index', compact('contacts', 'companies'));
     }
@@ -25,56 +32,63 @@ class ContactController extends Controller
     public function create()
     {
         $contact = new Contact();
-        $companies = Company::orderBy('name')->pluck('name', 'id')->prepend('All Companies', ' ');
+        $companies = Company::userCompanies();
         return view('contacts.create', compact('companies', 'contact'));
     }
 
-    public function store(Request $request)
+
+
+    public function store(ContactRequest $request)
     {
         // dd($request->all());
         // dd($request->only('first_name', 'last_name'));
 
-        $request->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'email' => 'required|email',
-            'address' => 'required',
-            'company_id' => 'required|exists:companies,id'
-        ]);
+        // $request->validate($this->validationRules());
         // dd($request->except('first_name', 'last_name'));
 
-        Contact::create($request->all());
+        // Contact::create($request->all() + ['user_id' => auth()->id()]);
+        $request->user()->contacts()->create($request->all());
 
         return redirect()->route('contacts.index')->with('message', "Contact has been added successfully");
     }
 
-    public function edit($id)
+    // protected function validationRules()
+    // {
+    //   return [
+
+    //   ];
+    // }
+
+    public function edit(Contact $contact)
     {
-        $contact = Contact::findOrFail($id);
-        $companies = Company::orderBy('name')->pluck('name', 'id')->prepend('All Companies', ' ');
+        // $contact = Contact::findOrFail($id);
+        $companies = Company::userCompanies();
         return view('contacts.edit', compact('companies', 'contact'));
     }
 
-    public function update($id, Request $request)
+    public function update(Contact $contact, ContactRequest $request)
     {
-        $request->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'email' => 'required|email',
-            'address' => 'required',
-            'company_id' => 'required|exists:companies,id'
-        ]);
+        // $request->validate($this->validationRules());
         // dd($request->except('first_name', 'last_name'));
 
-        $contact = Contact::findOrFail($id);
+        // $contact = Contact::findOrFail($id);
         $contact->update($request->all());
 
         return redirect()->route('contacts.index')->with('message', "Contact has been updated successfully");
     }
 
-    public function show($id)
+    public function show(Contact $contact)
     {
-        $contact =  Contact::findOrFail($id);
-   return view('contacts.show', compact('contact')); // ['contact'=> $contact]
+        // $contact = $id;
+        // $contact =  Contact::findOrFail($id);
+      return view('contacts.show', compact('contact')); // ['contact'=> $contact]
+    }
+
+    public function destroy(Contact $contact)
+    {
+        // $contact = Contact::findOrFail($id);
+        $contact->delete();
+
+        return redirect()->route('contacts.index')->with('message', "Contact has been deleted successfully");
     }
 }

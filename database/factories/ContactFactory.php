@@ -2,8 +2,9 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\Contact;
+use App\User;
 use App\Company;
+use App\Contact;
 use Faker\Generator as Faker;
 
 $factory->define(Contact::class, function (Faker $faker) {
@@ -13,6 +14,7 @@ $factory->define(Contact::class, function (Faker $faker) {
         'phone' => $faker->phoneNumber,
         'email' => $faker->email,
         'address' => $faker->address,
+        // 'user_id' => factory(User::class)
         // 'company_id' => Company::pluck('id')->random()
     ];
 });
